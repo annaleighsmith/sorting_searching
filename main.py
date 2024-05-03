@@ -1,12 +1,18 @@
-import time
-from typing import List, Callable, Any
-import numpy as np
+"""Module to compare the performance of sorting and searching algorithms"""
+
 import sys
+from typing import List, Callable, Any
+import time
+import numpy as np
 
 sys.setrecursionlimit(100000)
 
 
 def timer(func: Callable[..., Any]) -> Callable[..., Any]:
+    """
+    Decorator to measure the time taken by a function
+    """
+
     def wrapper(*args, **kwargs) -> Any:
         start_time = time.time()
         result = func(*args, **kwargs)
@@ -14,19 +20,26 @@ def timer(func: Callable[..., Any]) -> Callable[..., Any]:
         duration_ms = (end_time - start_time) * 1000
         print(f"Time taken by {func.__name__}:\n\t{round(duration_ms, 4)} ms")
         return result
+
     return wrapper
 
 
 @timer
-def linearSearch(nums: List[int], target: int) -> int:
-    for i in range(len(nums)):
+def linear_search(nums: List[int], target: int) -> int:
+    """
+    Linear search for a target in a list of numbers
+    """
+    for i, _ in enumerate(nums):
         if nums[i] == target:
             return i
     return -1
 
 
 @timer
-def binarySearch(nums: List[int], target: int) -> int:
+def binary_search(nums: List[int], target: int) -> int:
+    """
+    Binary search for a target in a sorted list of numbers
+    """
     left, right = 0, len(nums) - 1
     while left <= right:
         mid = left + (right - left) // 2
@@ -35,7 +48,7 @@ def binarySearch(nums: List[int], target: int) -> int:
             while mid > 0 and nums[mid - 1] == target:
                 mid -= 1
             return mid
-        elif nums[mid] < target:
+        if nums[mid] < target:
             left = mid + 1
         else:
             right = mid - 1
@@ -43,7 +56,7 @@ def binarySearch(nums: List[int], target: int) -> int:
 
 
 @timer
-def builtinSearch(nums: List[int], target: int) -> int:
+def built_in_search(nums: List[int], target: int) -> int:
     """
     Uses the built-in index() method to find the target
     Linear search but a bit faster because of implementation in C
@@ -52,7 +65,7 @@ def builtinSearch(nums: List[int], target: int) -> int:
 
 
 @timer
-def builtinSort(nums: List[int]) -> List[int]:
+def built_in_sort(nums: List[int]) -> List[int]:
     """
     Uses the built-in sort() method to sort the list
     Uses TimSort which is a hybrid sorting algorithm derived from merge sort and insertion sort
@@ -61,7 +74,11 @@ def builtinSort(nums: List[int]) -> List[int]:
 
 
 @timer
-def heapSortAll(nums: List[int]) -> List[int]:
+def heap_sort_all(nums: List[int]) -> List[int]:
+    """
+    Heap sort using max heap
+    """
+
     def heapify(nums: List[int], n: int, i: int) -> None:
         largest = i
         left = 2 * i + 1
@@ -74,7 +91,7 @@ def heapSortAll(nums: List[int]) -> List[int]:
             nums[i], nums[largest] = nums[largest], nums[i]
             heapify(nums, n, largest)
 
-    def heapSort(nums: List[int]) -> List[int]:
+    def heap_sort(nums: List[int]) -> List[int]:
         n = len(nums)
         for i in range(n // 2, -1, -1):
             heapify(nums, n, i)
@@ -83,21 +100,31 @@ def heapSortAll(nums: List[int]) -> List[int]:
             heapify(nums, i, 0)
         return nums
 
-    return heapSort(nums)
+    return heap_sort(nums)
 
 
 @timer
-def mergeSortAll(nums: List[int]) -> List[int]:
-    def mergeSort(nums):
+def merge_sort_all(nums: List[int]) -> List[int]:
+    """
+    Merge sort using top-down approach
+    """
+
+    def merge_sort(nums):
+        """
+        Recursively divides the list into two halves and merges them back
+        """
         if len(nums) == 1:
             return nums
         mid = len(nums) // 2
-        left = nums[:mid+1]
-        right = nums[mid+1:]
+        left = nums[: mid + 1]
+        right = nums[mid + 1 :]
         result = merge(left, right)
         return result
 
     def merge(left, right):
+        """
+        Merges two sorted lists into one sorted list
+        """
         result = []
         i = 0
         j = 0
@@ -112,11 +139,15 @@ def mergeSortAll(nums: List[int]) -> List[int]:
         result += right[j:]
         return result
 
-    return mergeSort(nums)
+    return merge_sort(nums)
 
 
 @timer
-def quickSortA(nums: List[int]) -> List[int]:
+def quick_sort_a(nums: List[int]) -> List[int]:
+    """
+    Quick sort using Lomuto partition scheme
+    """
+
     def partition(nums: List[int], low: int, high: int) -> int:
         pivot = nums[high]  # select last element
         i = low - 1
@@ -127,19 +158,25 @@ def quickSortA(nums: List[int]) -> List[int]:
         nums[i + 1], nums[high] = nums[high], nums[i + 1]
         return i + 1
 
-    def quickSortHelper(nums: List[int], low: int, high: int) -> None:
+    def quick_sort_helper(nums: List[int], low: int, high: int) -> None:
         if low < high:
             pi = partition(nums, low, high)
-            quickSortHelper(nums, low, pi - 1)
-            quickSortHelper(nums, pi + 1, high)
-    quickSortHelper(nums, 0, len(nums) - 1)
+            quick_sort_helper(nums, low, pi - 1)
+            quick_sort_helper(nums, pi + 1, high)
+
+    quick_sort_helper(nums, 0, len(nums) - 1)
     return nums
 
 
 @timer
-def quickSortB(nums: List[int]) -> List[int]:
+def quick_sort_b(nums: List[int]) -> List[int]:
+    """
+    Quick sort using Hoare partition scheme
+    """
+
     def quick_sort(nums, is_top_level=True):
         if len(nums) > 1:
+            _ = is_top_level  # suppress unused variable warning
             pivot = nums.pop()
             greater, equal, smaller = [], [pivot], []
             for item in nums:
@@ -149,28 +186,24 @@ def quickSortB(nums: List[int]) -> List[int]:
                     greater.append(item)
                 else:
                     smaller.append(item)
-            return (quick_sort(smaller, False) +
-                    equal +
-                    quick_sort(greater, False))
-        else:
-            return nums
+            return quick_sort(smaller, False) + equal + quick_sort(greater, False)
+        return nums
 
     return quick_sort(nums.copy())
 
 
-n = 10000
-nums = np.random.randint(0, n, size=n)
-nums = nums.tolist()
+nums_selected = np.random.randint(0, 10000, size=10000)
+nums_selected = nums_selected.tolist()
 
-heapSortAll(nums)
-builtinSort(nums)
-mergeSortAll(nums)
-quickSortA(nums)
-quickSortB(nums)
+heap_sort_all(nums_selected)
+built_in_sort(nums_selected)
+merge_sort_all(nums_selected)
+quick_sort_a(nums_selected)
+quick_sort_b(nums_selected)
 
-nums = sorted(nums)
-target = np.random.choice(nums)
+nums_selected = sorted(nums_selected)
+selected_target = np.random.choice(nums_selected)
 
-linearSearch(nums, target)
-builtinSearch(nums, target)
-binarySearch(nums, target)
+linear_search(nums_selected, selected_target)
+built_in_search(nums_selected, selected_target)
+binary_search(nums_selected, selected_target)
